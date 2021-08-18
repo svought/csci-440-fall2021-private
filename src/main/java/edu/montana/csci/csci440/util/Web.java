@@ -8,8 +8,11 @@ import spark.template.velocity.VelocityTemplateEngine;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -147,9 +150,10 @@ public class Web {
     }
 
     public String nextPage(List collection){
+        String otherParams = getParamsForPaging();
         if (collection.size() == PAGE_SIZE) {
             Integer page = getPage();
-            return "<a href='" + getRequest().pathInfo() + "?page=" + (page + 1) + getOrderBy() + "'>Next Page &gt;&gt;</a>";
+            return "<a href='" + getRequest().pathInfo() + "?page=" + (page + 1) + "&" + otherParams + "'>Next Page &gt;&gt;</a>";
         } else {
             return "";
         }
@@ -175,13 +179,34 @@ public class Web {
 
     public String prevPage() {
         Integer page = getPage();
+        String otherParams = getParamsForPaging();
         if (page > 2) {
-            return "<a href='" + getRequest().pathInfo() + "?page=" + (page - 1) + getOrderBy() + "'>&lt;&lt;  Previous Page</a>";
+            return "<a href='" + getRequest().pathInfo() + "?page=" + (page - 1) + "&" + otherParams + "'>&lt;&lt;  Previous Page</a>";
         } else if (page == 2) {
-            return "<a href='" + getRequest().pathInfo() + "?" + getOrderBy() + "'>&lt;&lt;  Previous Page</a>";
+            return "<a href='" + getRequest().pathInfo() + "?" + otherParams + "'>&lt;&lt;  Previous Page</a>";
         } else {
             return "";
         }
+    }
+
+    private String getParamsForPaging() {
+        StringBuilder queryParamsForPaging = new StringBuilder("");
+        Set<String> queryParams = getRequest().queryParams();
+        for (String queryParam : queryParams) {
+            if (!"page".equals(queryParam)) {
+                if (queryParamsForPaging.length() != 0) {
+                    queryParamsForPaging.append("&");
+                }
+                try {
+                    queryParamsForPaging.append(queryParam)
+                            .append("=")
+                            .append(URLEncoder.encode(getRequest().queryParams(queryParam), StandardCharsets.UTF_8.toString()));
+                } catch (UnsupportedEncodingException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        }
+        return queryParamsForPaging.toString();
     }
 
     public String select(String model, String displayProperty, Object selected) throws Exception {
@@ -239,7 +264,7 @@ public class Web {
             System.out.println("################################################################");
             System.out.println("#  ERROR ");
             System.out.println("################################################################");
-            System.out.println("An error occured: " + e.getMessage());
+            System.out.println("An error occurred: " + e.getMessage());
             e.printStackTrace();
 
             StringWriter sw = new StringWriter();
