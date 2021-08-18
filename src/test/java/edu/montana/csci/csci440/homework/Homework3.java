@@ -1,8 +1,13 @@
 package edu.montana.csci.csci440.homework;
 
 import edu.montana.csci.csci440.DBTest;
+import edu.montana.csci.csci440.model.Track;
+import edu.montana.csci.csci440.util.DB;
 import org.junit.jupiter.api.Test;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 
@@ -12,59 +17,76 @@ public class Homework3 extends DBTest {
 
     @Test
     /*
-     * Create a view tracksPlus to display the artist, song title, album, and genre for all tracks.
-     */
-    public void createTracksPlusView(){
-        //TODO fill this in
-        executeDDL("CREATE VIEW tracksPlus");
-
-        List<Map<String, Object>> results = executeSQL("SELECT * FROM tracksPlus ORDER BY TrackId");
-        assertEquals(3503, results.size());
-        assertEquals("Rock", results.get(0).get("GenreName"));
-        assertEquals("AC/DC", results.get(0).get("ArtistName"));
-        assertEquals("For Those About To Rock We Salute You", results.get(0).get("AlbumTitle"));
-    }
-
-    @Test
-    /*
-     * Create a table grammy_infos to track grammy information for an artist.  The table should include
-     * a reference to the artist, the album (if the grammy was for an album) and the song (if the grammy was
-     * for a song).  There should be a string column indicating if the artist was nominated or won.  Finally,
-     * there should be a reference to the grammy_category table
+     * Use a transaction to safely move milliseconds from one track to anotherls
      *
-     * Create a table grammy_category
+     * You will need to use the JDBC transaction API, outlined here:
+     *
+     *   https://docs.oracle.com/javase/tutorial/jdbc/basics/transactions.html
+     *
      */
-    public void createGrammyInfoTable(){
-        //TODO fill these in
-        executeDDL("create table grammy_categories");
-        executeDDL("create table grammy_infos");
+    public void useATransactionToSafelyMoveMillisecondsFromOneTrackToAnother() throws SQLException {
 
-        // TEST CODE
-        executeUpdate("INSERT INTO grammy_categories(Name) VALUES ('Greatest Ever');");
-        Object categoryId = executeSQL("SELECT GrammyCategoryId FROM grammy_categories").get(0).get("GrammyCategoryId");
+        Track track1 = Track.find(1);
+        Long track1InitialTime = track1.getMilliseconds();
+        Track track2 = Track.find(2);
+        Long track2InitialTime = track2.getMilliseconds();
 
-        executeUpdate("INSERT INTO grammy_infos(ArtistId, AlbumId, TrackId, GrammyCategoryId, Status) VALUES (1, 1, 1, " + categoryId + ",'Won');");
+        try(Connection connection = DB.connect()){
+            connection.setAutoCommit(false);
+            PreparedStatement subtract = connection.prepareStatement("TODO");
+            subtract.setLong(1, 0);
+            subtract.setLong(2, 0);
+            subtract.execute();
 
-        List<Map<String, Object>> results = executeSQL("SELECT * FROM grammy_infos");
-        assertEquals(1, results.size());
-        assertEquals(1, results.get(0).get("ArtistId"));
-        assertEquals(1, results.get(0).get("AlbumId"));
-        assertEquals(1, results.get(0).get("TrackId"));
-        assertEquals(1, results.get(0).get("GrammyCategoryId"));
+            PreparedStatement add = connection.prepareStatement("TODO");
+            subtract.setLong(1, 0);
+            subtract.setLong(2, 0);
+            subtract.execute();
+
+            // commit with the connection
+        }
+
+        // refresh tracks from db
+        track1 = Track.find(1);
+        track2 = Track.find(2);
+        assertEquals(track1.getMilliseconds(), track1InitialTime - 10);
+        assertEquals(track2.getMilliseconds(), track2InitialTime + 10);
     }
 
     @Test
     /*
-     * Bulk insert five categories of your choosing in the genres table
-     */
-    public void bulkInsertGenres(){
-        Integer before = (Integer) executeSQL("SELECT COUNT(*) as COUNT FROM genres").get(0).get("COUNT");
+     * Select tracks that have been sold more than once (> 1)
+     *
+     * Select the albumbs that have tracks that have been sold more than once (> 1)
+     *   NOTE: This is NOT the same as albums whose tracks have been sold more than once!
+     *         An album could have had three tracks, each sold once, and should not be included
+     *         in this result.  It should only include the albums of the tracks found in the first
+     *         query.
+     * */
+    public void selectPopularTracksAndTheirAlbums() throws SQLException {
 
-        //TODO fill this in
-        executeUpdate("INSERT");
+        // HINT: join to invoice items and do a group by/having to get the right answer
+        List<Map<String, Object>> tracks = executeSQL("");
+        assertEquals(256, tracks.size());
 
-        Integer after = (Integer) executeSQL("SELECT COUNT(*) as COUNT FROM genres").get(0).get("COUNT");
-        assertEquals(before + 5, after);
+        // HINT: join to tracks and invoice items and do a group by/having to get the right answer
+        //       note: you will need to use the DISTINCT operator to get the right result!
+        List<Map<String, Object>> albums = executeSQL("");
+        assertEquals(166, albums.size());
     }
+
+    @Test
+    /*
+     * Select customers emails who are assigned to Jane Peacock as a Rep and
+     * who have purchased something from the 'Rock' Genre
+     *
+     * Please use an IN clause and a sub-select to generate customer IDs satisfying the criteria
+     * */
+    public void selectCustomersMeetingCriteria() throws SQLException {
+        // HINT: join to invoice items and do a group by/having to get the right answer
+        List<Map<String, Object>> tracks = executeSQL("" );
+        assertEquals(21, tracks.size());
+    }
+
 
 }

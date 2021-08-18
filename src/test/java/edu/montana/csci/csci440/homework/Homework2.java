@@ -5,55 +5,66 @@ import org.junit.jupiter.api.Test;
 
 import java.util.List;
 import java.util.Map;
-import static org.junit.jupiter.api.Assertions.*;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class Homework2 extends DBTest {
 
     @Test
     /*
-     * Write a query in the string below that returns all artists that have an 'A' in their name
+     * Create a view tracksPlus to display the artist, song title, album, and genre for all tracks.
      */
-    void selectArtistsWhoseNameHasAnAInIt(){
-        List<Map<String, Object>> results = executeSQL("SELECT * FROM artists");
-        assertEquals(211, results.size());
+    public void createTracksPlusView(){
+        //TODO fill this in
+        executeDDL("CREATE VIEW tracksPlus");
+
+        List<Map<String, Object>> results = executeSQL("SELECT * FROM tracksPlus ORDER BY TrackId");
+        assertEquals(3503, results.size());
+        assertEquals("Rock", results.get(0).get("GenreName"));
+        assertEquals("AC/DC", results.get(0).get("ArtistName"));
+        assertEquals("For Those About To Rock We Salute You", results.get(0).get("AlbumTitle"));
     }
 
     @Test
     /*
-     * Write a query in the string below that returns all artists that have more than one album
+     * Create a table grammy_infos to track grammy information for an artist.  The table should include
+     * a reference to the artist, the album (if the grammy was for an album) and the song (if the grammy was
+     * for a song).  There should be a string column indicating if the artist was nominated or won.  Finally,
+     * there should be a reference to the grammy_category table
+     *
+     * Create a table grammy_category
      */
-    void selectAllArtistsWithMoreThanOneAlbum(){
-        List<Map<String, Object>> results = executeSQL(
-                "SELECT * FROM artists");
+    public void createGrammyInfoTable(){
+        //TODO fill these in
+        executeDDL("create table grammy_categories");
+        executeDDL("create table grammy_infos");
 
-        assertEquals(56, results.size());
-        assertEquals("AC/DC", results.get(0).get("Name"));
+        // TEST CODE
+        executeUpdate("INSERT INTO grammy_categories(Name) VALUES ('Greatest Ever');");
+        Object categoryId = executeSQL("SELECT GrammyCategoryId FROM grammy_categories").get(0).get("GrammyCategoryId");
+
+        executeUpdate("INSERT INTO grammy_infos(ArtistId, AlbumId, TrackId, GrammyCategoryId, Status) VALUES (1, 1, 1, " + categoryId + ",'Won');");
+
+        List<Map<String, Object>> results = executeSQL("SELECT * FROM grammy_infos");
+        assertEquals(1, results.size());
+        assertEquals(1, results.get(0).get("ArtistId"));
+        assertEquals(1, results.get(0).get("AlbumId"));
+        assertEquals(1, results.get(0).get("TrackId"));
+        assertEquals(1, results.get(0).get("GrammyCategoryId"));
     }
 
     @Test
-        /*
-         * Write a query in the string below that returns all tracks longer than six minutes along with the
-         * album and artist name
-         */
-    void selectTheTrackAndAlbumAndArtistForAllTracksLongerThanSixMinutes() {
-        List<Map<String, Object>> results = executeSQL(
-                "SELECT tracks.Name as TrackName, albums.Title as AlbumTitle, artists.Name as ArtistsName FROM tracks " +
-                        "-- NEED TO DO SOME JOINS HERE KIDS");
+    /*
+     * Bulk insert five categories of your choosing in the genres table
+     */
+    public void bulkInsertGenres(){
+        Integer before = (Integer) executeSQL("SELECT COUNT(*) as COUNT FROM genres").get(0).get("COUNT");
 
-        assertEquals(623, results.size());
+        //TODO fill this in
+        executeUpdate("INSERT");
 
-        // For now just get the count right, we'll do more elaborate stuff when we get
-        // to ORDER BY
-        //
-        //
-//        assertEquals("Princess of the Dawn", results.get(0).get("TrackName"));
-//        assertEquals("Restless and Wild", results.get(0).get("AlbumTitle"));
-//        assertEquals("Accept", results.get(0).get("ArtistsName"));
-//
-//        assertEquals("Snoopy's search-Red baron", results.get(10).get("TrackName"));
-//        assertEquals("The Best Of Billy Cobham", results.get(10).get("AlbumTitle"));
-//        assertEquals("Billy Cobham", results.get(10).get("ArtistsName"));
-
+        Integer after = (Integer) executeSQL("SELECT COUNT(*) as COUNT FROM genres").get(0).get("COUNT");
+        assertEquals(before + 5, after);
     }
 
 }
