@@ -1,0 +1,26 @@
+#parse('templates/header.vm')
+
+<h3>Playlists</h3>
+
+<table>
+    <thead>
+    <tr>
+        <th>Playlist ID</th>
+        <th>Name</th>
+    </tr>
+    </thead>
+    <tbody>
+        #foreach( $playlist in $playlists )
+        <tr>
+            <td><a href="/playlists/$playlist.PlaylistId">$playlist.PlaylistId</a></td>
+            <td>$!playlist.Name</td>
+        </tr>
+        #end
+    </tbody>
+</table>
+
+$web.pagingWidget($playlists)
+
+<a href="/playlists/new">[Create New Playlist]</a>
+
+#parse('templates/footer.vm')

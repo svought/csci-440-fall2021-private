@@ -1,0 +1,46 @@
+#parse('templates/header.vm')
+
+<h3>Tracks <small>($!totalTracks Total)</small></h3>
+
+<div style="padding: 12px">
+    <form>
+        <b>Search </b>
+        <input type="text" placeholder="Search by track, album or artist name..."
+               name="q"
+               value="$!web.param('q')">
+        <a href="/tracks/search">Advanced Search >></a>
+    </form>
+</div>
+
+<table>
+    <thead>
+    <tr>
+        <th>Track ID</th>
+        <th>Name</th>
+        <th>Album</th>
+        <th>ArtistName</th>
+        <th><a href="?o=Milliseconds">Milliseconds</a></th>
+        <th><a href="?o=Bytes">Bytes</a></th>
+        <th>UnitPrice</th>
+    </tr>
+    </thead>
+    <tbody>
+        #foreach( $track in $tracks )
+        <tr>
+            <td><a href="/tracks/$track.TrackId">$track.TrackId</a></td>
+            <td>$!track.Name</td>
+            <td>$!track.AlbumTitle</td>
+            <td>$!track.ArtistName</td>
+            <td>$!track.Milliseconds</td>
+            <td>$!track.Bytes</td>
+            <td>$!track.UnitPrice</td>
+        </tr>
+        #end
+    </tbody>
+</table>
+
+$web.pagingWidget($tracks)
+
+<a href="/tracks/new">[Create New Track]</a>
+
+#parse('templates/footer.vm')

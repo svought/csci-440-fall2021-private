@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="https://unpkg.com/style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        main {
+            max-width: 46em;
+            margin: 2em auto;
+            padding: 0 1em;
+            overflow: hidden;
+            word-wrap: break-word;
+        }
+    </style>
+    <title>Hello CSCI 440</title>
+</head>
+<body>
+<main>
+
+    <h1><img src="https://avatars2.githubusercontent.com/u/67816555?s=50&v=4"> CS 440 - Databases</h1>
+
+    <h4 style="color:green">$!message</h4>
+    <h4 style="color:red">$!error</h4>
+
+    <a href="/">Home</a> <br/>
+    <b>Music</b> - <a href="/artists">Artists</a> | <a href="/albums">Albums</a> | <a href="/tracks">Tracks</a> | <a href="/playlists">Playlists</a> <br/>
+    <b>Business</b> - <a href="/employees">Employees</a>  |  <a href="/customers">Customers</a> | <a href="/invoices">Invoices</a>
+
+    <hr/>

@@ -1,0 +1,34 @@
+#parse('templates/header.vm')
+
+<h3>Employees</h3>
+<a href="/employees/tree">[Employee Tree]</a>
+<a href="/employees/sales">[Sales Report]</a>
+
+<table>
+    <thead>
+    <tr>
+        <th>Employee ID</th>
+        <th>First Name</th>
+        <th>Last Name</th>
+        <th>Email</th>
+    </tr>
+    </thead>
+    <tbody>
+        #foreach( $employee in $employees )
+        <tr>
+            <td><a href="/employees/$employee.EmployeeId">$employee.EmployeeId</a></td>
+            <td>$!employee.FirstName</td>
+            <td>$!employee.LastName</td>
+            <td>$!employee.Email</td>
+        </tr>
+        #end
+    </tbody>
+</table>
+
+$web.pagingWidget($employees)
+
+
+<a href="/employees/new">[Create New Employee]</a>
+
+
+#parse('templates/footer.vm')

@@ -1,0 +1,27 @@
+#parse('templates/header.vm')
+
+<h3>Artists</h3>
+
+<table>
+    <thead>
+    <tr>
+        <th>Artist ID</th>
+        <th>Name</th>
+    </tr>
+    </thead>
+    <tbody>
+        #foreach( $artist in $artists )
+        <tr>
+            <td><a href="/artists/$artist.ArtistId">$artist.ArtistId</a></td>
+            <td>$!artist.Name</td>
+        </tr>
+        #end
+    </tbody>
+</table>
+
+$web.pagingWidget($artists)
+
+
+<a href="/artists/new">[Create New Artist]</a>
+
+#parse('templates/footer.vm')

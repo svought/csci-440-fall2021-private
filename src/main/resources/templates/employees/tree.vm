@@ -1,0 +1,11 @@
+#parse('templates/header.vm')
+
+<h3>Employees</h3>
+<a href="/employees/tree">[Employee Tree]</a>
+<a href="/employees/sales">[Sales Report]</a>
+
+<h4>Reporting Tree</h4>
+$!employeeTree
+
+
+#parse('templates/footer.vm')
