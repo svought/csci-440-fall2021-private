@@ -27,18 +27,18 @@
 Resetting DB After Test...
 Resetting DB After Test...
 Resetting DB After Test...
-[ERROR] Tests run: 3, Failures: 2, Errors: 1, Skipped: 0, Time elapsed: 0.182 s <<< FAILURE! - in edu.montana.csci.csci440.homework.Homework1
-[ERROR] selectArtistsWhoseNameHasAnAInIt  Time elapsed: 0.162 s  <<< FAILURE!
+[ERROR] Tests run: 3, Failures: 2, Errors: 1, Skipped: 0, Time elapsed: 0.211 s <<< FAILURE! - in edu.montana.csci.csci440.homework.Homework1
+[ERROR] selectArtistsWhoseNameHasAnAInIt  Time elapsed: 0.195 s  <<< FAILURE!
 org.opentest4j.AssertionFailedError: expected: <211> but was: <275>
 	at edu.montana.csci.csci440.homework.Homework1.selectArtistsWhoseNameHasAnAInIt(Homework1.java:18)
 
-[ERROR] selectTheTrackAndAlbumAndArtistForAllTracksLongerThanSixMinutes  Time elapsed: 0.007 s  <<< ERROR!
+[ERROR] selectTheTrackAndAlbumAndArtistForAllTracksLongerThanSixMinutes  Time elapsed: 0.004 s  <<< ERROR!
 java.lang.RuntimeException: org.sqlite.SQLiteException: [SQLITE_ERROR] SQL error or missing database (no such column: albums.Title)
 	at edu.montana.csci.csci440.homework.Homework1.selectTheTrackAndAlbumAndArtistForAllTracksLongerThanSixMinutes(Homework1.java:39)
 Caused by: org.sqlite.SQLiteException: [SQLITE_ERROR] SQL error or missing database (no such column: albums.Title)
 	at edu.montana.csci.csci440.homework.Homework1.selectTheTrackAndAlbumAndArtistForAllTracksLongerThanSixMinutes(Homework1.java:39)
 
-[ERROR] selectAllArtistsWithMoreThanOneAlbum  Time elapsed: 0.007 s  <<< FAILURE!
+[ERROR] selectAllArtistsWithMoreThanOneAlbum  Time elapsed: 0.005 s  <<< FAILURE!
 org.opentest4j.AssertionFailedError: expected: <56> but was: <275>
 	at edu.montana.csci.csci440.homework.Homework1.selectAllArtistsWithMoreThanOneAlbum(Homework1.java:29)
 
@@ -56,8 +56,8 @@ org.opentest4j.AssertionFailedError: expected: <56> but was: <275>
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD FAILURE
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  2.254 s
-[INFO] Finished at: 2021-09-22T10:42:24-06:00
+[INFO] Total time:  2.665 s
+[INFO] Finished at: 2021-09-22T14:32:31-06:00
 [INFO] ------------------------------------------------------------------------
 [ERROR] Failed to execute goal org.apache.maven.plugins:maven-surefire-plugin:2.22.1:test (default-test) on project CSCI_440_Project: There are test failures.
 [ERROR] 
