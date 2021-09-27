@@ -14,7 +14,7 @@ public class Homework1 extends DBTest {
      * Write a query in the string below that returns all artists that have an 'A' in their name
      */
     void selectArtistsWhoseNameHasAnAInIt(){
-        List<Map<String, Object>> results = executeSQL("SELECT * FROM artists");
+        List<Map<String, Object>> results = executeSQL("select Name from artists where Name like '%A%'\n");
         assertEquals(211, results.size());
     }
 
@@ -24,7 +24,7 @@ public class Homework1 extends DBTest {
      */
     void selectAllArtistsWithMoreThanOneAlbum(){
         List<Map<String, Object>> results = executeSQL(
-                "SELECT * FROM artists");
+                "select Name, count(a.ArtistId) from albums join artists a on albums.ArtistId = a.ArtistId group by Name having count(a.ArtistId)>1\n");
 
         assertEquals(56, results.size());
         assertEquals("AC/DC", results.get(0).get("Name"));
@@ -37,8 +37,7 @@ public class Homework1 extends DBTest {
          */
     void selectTheTrackAndAlbumAndArtistForAllTracksLongerThanSixMinutes() {
         List<Map<String, Object>> results = executeSQL(
-                "SELECT tracks.Name as TrackName, albums.Title as AlbumTitle, artists.Name as ArtistsName FROM tracks " +
-                        "-- NEED TO DO SOME JOINS HERE KIDS");
+                "SELECT tracks.Name as TrackName, a.Title as AlbumTitle, a2.Name as ArtistsName, Milliseconds/60000 FROM tracks join albums a on a.AlbumId = tracks.AlbumId join artists a2 on a.ArtistId = a2.ArtistId where Milliseconds/60000 > 5");
 
         assertEquals(623, results.size());
 
