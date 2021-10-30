@@ -27,8 +27,8 @@
 Resetting DB After Test...
 Resetting DB After Test...
 Resetting DB After Test...
-[ERROR] Tests run: 3, Failures: 0, Errors: 3, Skipped: 0, Time elapsed: 0.281 s <<< FAILURE! - in edu.montana.csci.csci440.homework.Homework2
-[ERROR] bulkInsertGenres  Time elapsed: 0.259 s  <<< ERROR!
+[ERROR] Tests run: 3, Failures: 0, Errors: 3, Skipped: 0, Time elapsed: 0.294 s <<< FAILURE! - in edu.montana.csci.csci440.homework.Homework2
+[ERROR] bulkInsertGenres  Time elapsed: 0.273 s  <<< ERROR!
 java.lang.RuntimeException: org.sqlite.SQLiteException: [SQLITE_ERROR] SQL error or missing database (incomplete input)
 	at edu.montana.csci.csci440.homework.Homework2.bulkInsertGenres(Homework2.java:64)
 Caused by: org.sqlite.SQLiteException: [SQLITE_ERROR] SQL error or missing database (incomplete input)
@@ -40,7 +40,7 @@ java.lang.RuntimeException: org.sqlite.SQLiteException: [SQLITE_ERROR] SQL error
 Caused by: org.sqlite.SQLiteException: [SQLITE_ERROR] SQL error or missing database (incomplete input)
 	at edu.montana.csci.csci440.homework.Homework2.createGrammyInfoTable(Homework2.java:39)
 
-[ERROR] createTracksPlusView  Time elapsed: 0.006 s  <<< ERROR!
+[ERROR] createTracksPlusView  Time elapsed: 0.005 s  <<< ERROR!
 java.lang.RuntimeException: org.sqlite.SQLiteException: [SQLITE_ERROR] SQL error or missing database (incomplete input)
 	at edu.montana.csci.csci440.homework.Homework2.createTracksPlusView(Homework2.java:19)
 Caused by: org.sqlite.SQLiteException: [SQLITE_ERROR] SQL error or missing database (incomplete input)
@@ -59,8 +59,8 @@ Caused by: org.sqlite.SQLiteException: [SQLITE_ERROR] SQL error or missing datab
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD FAILURE
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  3.606 s
-[INFO] Finished at: 2021-10-29T14:57:39-06:00
+[INFO] Total time:  3.214 s
+[INFO] Finished at: 2021-10-29T18:54:55-06:00
 [INFO] ------------------------------------------------------------------------
 [ERROR] Failed to execute goal org.apache.maven.plugins:maven-surefire-plugin:2.22.1:test (default-test) on project CSCI_440_Project: There are test failures.
 [ERROR] 
