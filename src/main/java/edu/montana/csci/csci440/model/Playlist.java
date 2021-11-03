@@ -26,7 +26,23 @@ public class Playlist extends Model {
 
     public List<Track> getTracks(){
         // TODO implement, order by track name
-        return Collections.emptyList();
+        //have to do query to get list of tracks using this.playlistId
+
+
+        String query = "SELECT DISTINCT * FROM tracks JOIN playlist_track pt on tracks.TrackId = pt.TrackId " +
+                "WHERE pt.PlaylistId=? ORDER BY tracks.Name";
+        try (Connection conn = DB.connect();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+            stmt.setLong(1, playlistId);
+            ResultSet results = stmt.executeQuery();
+            List<Track> resultList = new LinkedList<>();
+            while (results.next()) {
+                resultList.add(new Track(results)); //Changed Track(results) method to public in Track.java
+            }
+            return resultList;
+        } catch (SQLException sqlException) {
+            throw new RuntimeException(sqlException);
+        }
     }
 
     public Long getPlaylistId() {
@@ -48,9 +64,10 @@ public class Playlist extends Model {
     public static List<Playlist> all(int page, int count) {
         try (Connection conn = DB.connect();
              PreparedStatement stmt = conn.prepareStatement(
-                     "SELECT * FROM playlists LIMIT ?"
+                     "SELECT * FROM playlists LIMIT ? OFFSET 10*(?-1)"
              )) {
             stmt.setInt(1, count);
+            stmt.setInt(2, page);
             ResultSet results = stmt.executeQuery();
             List<Playlist> resultList = new LinkedList<>();
             while (results.next()) {
@@ -76,5 +93,6 @@ public class Playlist extends Model {
             throw new RuntimeException(sqlException);
         }
     }
+
 
 }

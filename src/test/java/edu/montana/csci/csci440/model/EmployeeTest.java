@@ -43,6 +43,7 @@ public class EmployeeTest extends DBTest {
         emp.create();
         assertNotNull(emp.getEmployeeId());
 
+        System.out.println(emp.getBoss());
         assertEquals(Employee.find(1), emp.getBoss());
     }
 

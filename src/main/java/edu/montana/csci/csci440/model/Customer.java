@@ -31,6 +31,64 @@ public class Customer extends Model {
         lastName = results.getString("LastName");
         customerId = results.getLong("CustomerId");
         supportRepId = results.getLong("SupportRepId");
+        email = results.getString("Email");
+    }
+
+    @Override
+    public boolean verify() {
+        _errors.clear(); // clear any existing errors
+        if (firstName == null || "".equals(firstName)) {
+            addError("First Name can't be null or empty!");
+        }
+        if (lastName == null || "".equals(lastName)) {
+            addError("Last Name can't be null or empty!");
+        }
+        if (email == null || "".equals(email)) {
+            addError("LastName can't be null!");
+        }
+        return !hasErrors();
+    }
+
+    @Override
+    public boolean update() {
+        if (verify()) {
+            try (Connection conn = DB.connect();
+                 PreparedStatement stmt = conn.prepareStatement(
+                         "UPDATE customers SET (SupportRepId, FirstName, LastName, Email) = (?, ?, ?, ?, ?) WHERE CustomerId=?")) {
+                stmt.setLong(1, this.getSupportRepId());
+                stmt.setString(2, this.getFirstName());
+                stmt.setString(3, this.getLastName());
+                stmt.setString(4, this.getEmail());
+                stmt.setLong(5, this.getCustomerId());
+                stmt.executeUpdate();
+                return true;
+            } catch (SQLException sqlException) {
+                throw new RuntimeException(sqlException);
+            }
+        } else {
+            return false;
+        }
+    }
+
+    @Override
+    public boolean create() {
+        if (verify()) {
+            try (Connection conn = DB.connect();
+                 PreparedStatement stmt = conn.prepareStatement(
+                         "INSERT INTO customers (SupportRepId, FirstName, LastName, Email) VALUES (?, ?, ?, ?)")) {
+                stmt.setLong(1, this.getSupportRepId());
+                stmt.setString(2, this.getFirstName());
+                stmt.setString(3, this.getLastName());
+                stmt.setString(4, this.getEmail());
+                stmt.executeUpdate();
+                customerId = DB.getLastID(conn);
+                return true;
+            } catch (SQLException sqlException) {
+                throw new RuntimeException(sqlException);
+            }
+        } else {
+            return false;
+        }
     }
 
     public String getFirstName() {
@@ -60,9 +118,10 @@ public class Customer extends Model {
     public static List<Customer> all(int page, int count) {
         try (Connection conn = DB.connect();
              PreparedStatement stmt = conn.prepareStatement(
-                     "SELECT * FROM customers LIMIT ?"
+                     "SELECT * FROM customers ORDER BY CustomerId LIMIT ? OFFSET 25*(?-1)"
              )) {
             stmt.setInt(1, count);
+            stmt.setInt(2, page);
             ResultSet results = stmt.executeQuery();
             List<Customer> resultList = new LinkedList<>();
             while (results.next()) {
