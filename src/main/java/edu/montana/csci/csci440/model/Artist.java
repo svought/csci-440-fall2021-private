@@ -15,12 +15,14 @@ public class Artist extends Model {
 
     Long artistId;
     String name;
+    String oldName;
 
     public Artist() {
     }
 
     private Artist(ResultSet results) throws SQLException {
-        name = results.getString("Name");
+        oldName = results.getString("Name");
+        name = oldName;
         artistId = results.getLong("ArtistId");
     }
 
@@ -51,10 +53,10 @@ public class Artist extends Model {
     public static List<Artist> all(int page, int count) {
         try (Connection conn = DB.connect();
              PreparedStatement stmt = conn.prepareStatement(
-                     "SELECT * FROM artists LIMIT ? OFFSET 100*(?-1)"
+                     "SELECT * FROM artists LIMIT ? OFFSET ?"
              )) {
             stmt.setInt(1, count);
-            stmt.setInt(2, page);
+            stmt.setInt(2, (page-1)*count);
             ResultSet results = stmt.executeQuery();
             List<Artist> resultList = new LinkedList<>();
             while (results.next()) {
@@ -73,25 +75,24 @@ public class Artist extends Model {
             addError("Artist name can't be null or blank!");
         }
         return !hasErrors();
-
-//        if(find(artistId) == null){
-//            return hasErrors();
-//        }
-//        else {
-//            return !hasErrors();
-//        }
     }
+
 
     @Override
     public boolean update() {
         if (verify()) {
             try (Connection conn = DB.connect();
                  PreparedStatement stmt = conn.prepareStatement(
-                         "UPDATE artists SET name = ? WHERE ArtistId=?")) {
+                         "UPDATE artists SET Name=? WHERE Name=? AND ArtistId=?")) {
                 stmt.setString(1, this.getName());
-                stmt.setLong(2, this.getArtistId());
-                stmt.executeUpdate();
-                return true;
+                stmt.setString(2, oldName);
+                stmt.setLong(3, this.getArtistId());
+                int updatedRows = stmt.executeUpdate();
+                if (updatedRows == 1){
+                    return true;
+                } else{
+                    return false;
+                }
             } catch (SQLException sqlException) {
                 throw new RuntimeException(sqlException);
             }

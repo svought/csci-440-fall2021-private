@@ -1,6 +1,7 @@
 package edu.montana.csci.csci440.model;
 
 import edu.montana.csci.csci440.util.DB;
+import org.w3c.dom.ls.LSOutput;
 import redis.clients.jedis.Client;
 import redis.clients.jedis.Jedis;
 
@@ -10,10 +11,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 public class Track extends Model {
 
@@ -25,6 +23,8 @@ public class Track extends Model {
     private Long milliseconds;
     private Long bytes;
     private BigDecimal unitPrice;
+    private String artistName;
+    private String albumName;
 
     public static final String REDIS_CACHE_KEY = "cs440-tracks-count-cache";
 
@@ -45,6 +45,9 @@ public class Track extends Model {
         albumId = results.getLong("AlbumId");
         mediaTypeId = results.getLong("MediaTypeId");
         genreId = results.getLong("GenreId");
+        artistName = results.getString("ArtistName");
+        albumName = results.getString("AlbumName");
+
     }
 
     @Override
@@ -121,7 +124,12 @@ public class Track extends Model {
 
     public static Track find(long i) {
         try (Connection conn = DB.connect();
-             PreparedStatement stmt = conn.prepareStatement("SELECT * FROM tracks WHERE TrackId=?")) {
+             PreparedStatement stmt = conn.prepareStatement("SELECT tracks.*, Albums.Title as AlbumName, " +
+                     "Artists.Name as ArtistName\n" +
+                     "FROM tracks\n" +
+                     "         INNER JOIN albums ON albums.AlbumID = tracks.AlbumID\n" +
+                     "         INNER JOIN artists ON artists.ArtistId = albums.ArtistId\n" +
+                     "WHERE TrackId =?")) {
             stmt.setLong(1, i);
             ResultSet results = stmt.executeQuery();
             if (results.next()) {
@@ -136,11 +144,17 @@ public class Track extends Model {
 
     public static Long count() {
         Jedis redisClient = new Jedis(); // use this class to access redis and create a cache
+        String str = redisClient.get(REDIS_CACHE_KEY);
+        if(str != null){
+            return Long.parseLong(str);
+        }
         try (Connection conn = DB.connect();
              PreparedStatement stmt = conn.prepareStatement("SELECT COUNT(*) as Count FROM tracks")) {
             ResultSet results = stmt.executeQuery();
             if (results.next()) {
-                return results.getLong("Count");
+                long count = results.getLong("Count");
+                redisClient.set(REDIS_CACHE_KEY, Long.toString(count));
+                return count;
             } else {
                 throw new IllegalStateException("Should find a count!");
             }
@@ -160,7 +174,21 @@ public class Track extends Model {
         return null;
     }
     public List<Playlist> getPlaylists(){
-        return Collections.emptyList();
+        try (Connection conn = DB.connect();
+             PreparedStatement stmt = conn.prepareStatement("SELECT p.PlaylistId, p.Name\n" +
+                     "FROM tracks\n" +
+                     "join playlist_track pt on tracks.TrackId = pt.TrackId\n" +
+                     "join playlists p on p.PlaylistId = pt.PlaylistId\n" +
+                     "WHERE tracks.TrackId=1")) {
+            ResultSet results = stmt.executeQuery();
+            List<Playlist> playlistsList = new LinkedList<Playlist>();
+            while (results.next()) {
+                playlistsList.add(new Playlist(results));
+            }
+            return playlistsList;
+        } catch (SQLException sqlException) {
+            throw new RuntimeException(sqlException);
+        }
     }
 
     public Long getTrackId() {
@@ -234,13 +262,13 @@ public class Track extends Model {
     public String getArtistName() {
         // TODO implement more efficiently
         //  hint: cache on this model object
-        return getAlbum().getArtist().getName();
+        return artistName;
     }
 
     public String getAlbumTitle() {
         // TODO implement more efficiently
         //  hint: cache on this model object
-        return getAlbum().getTitle();
+        return albumName;
     }
 
     public static List<Track> advancedSearch(int page, int count,
@@ -248,9 +276,11 @@ public class Track extends Model {
                                              Integer maxRuntime, Integer minRuntime) {
         LinkedList<Object> args = new LinkedList<>();
 
-        String query = "SELECT * FROM tracks " +
-                "JOIN albums ON tracks.AlbumId = albums.AlbumId " +
-                "WHERE name LIKE ?";
+        String query = "SELECT tracks.*, Albums.Title As AlbumName, " +
+                "Artists.Name as ArtistName FROM tracks " +
+                "INNER JOIN albums on albums.AlbumId = tracks.AlbumId " +
+                "INNER JOIN artists on artists.ArtistId = albums.ArtistId " +
+                "WHERE tracks.name LIKE ?";
         args.add("%" + search + "%");
 
         // Conditionally include the query and argument
@@ -280,12 +310,33 @@ public class Track extends Model {
     }
 
     public static List<Track> search(int page, int count, String orderBy, String search) {
-        String query = "SELECT * FROM tracks WHERE name LIKE ? LIMIT ?";
+        HashMap<String, String> map = new HashMap<>();
+        map.put("TRACKID", "TrackId");
+        map.put("NAME", "Name");
+        map.put("ALBUMID", "AlbumId");
+        map.put("MEDIATYPEID", "MediaTypeId");
+        map.put("GENREID", "GenreId");
+        map.put("COMPOSER", "Composer");
+        map.put("MILLISECONDS", "Milliseconds");
+        map.put("BYTES", "Bytes");
+        map.put("UNITPRICE", "UnitPrice");
+
+        if (!map.containsKey(orderBy.toUpperCase())){
+            throw new RuntimeException("Order By Criteria Invalid");
+        }
+
+        String query = "SELECT tracks.*, Albums.Title As AlbumName, " +
+                "Artists.Name as ArtistName FROM tracks " +
+                "INNER JOIN albums on albums.AlbumId = tracks.AlbumId " +
+                "INNER JOIN artists on artists.ArtistId = albums.ArtistId" +
+                " WHERE tracks.name LIKE ? ORDER BY ? LIMIT ? OFFSET ?";
         search = "%" + search + "%";
         try (Connection conn = DB.connect();
              PreparedStatement stmt = conn.prepareStatement(query)) {
             stmt.setString(1, search);
-            stmt.setInt(2, count);
+            stmt.setString(2, orderBy);
+            stmt.setInt(3, count);
+            stmt.setInt(4, (page-1)*count);
             ResultSet results = stmt.executeQuery();
             List<Track> resultList = new LinkedList<>();
             while (results.next()) {
@@ -298,7 +349,11 @@ public class Track extends Model {
     }
 
     public static List<Track> forAlbum(Long albumId) {
-        String query = "SELECT * FROM tracks WHERE AlbumId=?";
+        String query = "SELECT tracks.*, Albums.Title as AlbumName, Artists.Name as ArtistName " +
+                "From tracks " +
+                "INNER JOIN albums on albums.AlbumId = tracks.AlbumId " +
+                "INNER JOIN artists on tracks.Name = artists.Name " +
+                "WHERE tracks.AlbumId=?";
         try (Connection conn = DB.connect();
              PreparedStatement stmt = conn.prepareStatement(query)) {
             stmt.setLong(1, albumId);
@@ -323,12 +378,30 @@ public class Track extends Model {
     }
 
     public static List<Track> all(int page, int count, String orderBy) {
+//        HashMap<String, String> map = new HashMap<>();
+//        map.put("TRACKID", "TrackId");
+//        map.put("NAME", "Name");
+//        map.put("ALBUMID", "AlbumId");
+//        map.put("MEDIATYPEID", "MediaTypeId");
+//        map.put("GENREID", "GenreId");
+//        map.put("COMPOSER", "Composer");
+//        map.put("MILLISECONDS", "Milliseconds");
+//        map.put("BYTES", "Bytes");
+//        map.put("UNITPRICE", "UnitPrice");
+//
+//        if (!map.containsKey(orderBy.toUpperCase())){
+//            throw new RuntimeException("Order By Criteria Invalid");
+//        }
+
         try (Connection conn = DB.connect();
              PreparedStatement stmt = conn.prepareStatement(
-                     "SELECT * FROM tracks LIMIT ? OFFSET 1000*(?-1)"
+                     "SELECT tracks.*, Albums.Title as AlbumName, Artists.Name as ArtistName FROM tracks " +
+                             "INNER JOIN albums ON albums.AlbumID = tracks.AlbumID " +
+                             "INNER JOIN artists ON artists.ArtistId = albums.ArtistId" +
+                             " ORDER BY " + orderBy + " ASC LIMIT  ? OFFSET ?"
              )) {
             stmt.setInt(1, count);
-            stmt.setInt(2, page);
+            stmt.setInt(2, (page-1)*count);
             ResultSet results = stmt.executeQuery();
             List<Track> resultList = new LinkedList<>();
             while (results.next()) {

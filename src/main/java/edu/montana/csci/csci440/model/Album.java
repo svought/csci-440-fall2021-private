@@ -113,10 +113,10 @@ public class Album extends Model {
     public static List<Album> all(int page, int count) {
         try (Connection conn = DB.connect();
              PreparedStatement stmt = conn.prepareStatement(
-                     "SELECT * FROM albums ORDER BY AlbumId LIMIT ? OFFSET 100*(?-1)"
+                     "SELECT * FROM albums ORDER BY AlbumId LIMIT ? OFFSET ?"
              )) {
             stmt.setInt(1, count);
-            stmt.setInt(2, page);
+            stmt.setInt(2, (page-1)*count);
             ResultSet results = stmt.executeQuery();
             List<Album> resultList = new LinkedList<>();
             while (results.next()) {

@@ -18,7 +18,7 @@ public class Playlist extends Model {
     public Playlist() {
     }
 
-    private Playlist(ResultSet results) throws SQLException {
+    Playlist(ResultSet results) throws SQLException {
         name = results.getString("Name");
         playlistId = results.getLong("PlaylistId");
     }
@@ -28,9 +28,12 @@ public class Playlist extends Model {
         // TODO implement, order by track name
         //have to do query to get list of tracks using this.playlistId
 
-
-        String query = "SELECT DISTINCT * FROM tracks JOIN playlist_track pt on tracks.TrackId = pt.TrackId " +
-                "WHERE pt.PlaylistId=? ORDER BY tracks.Name";
+        String query = "SELECT *, Albums.Title as AlbumName, Artists.Name as ArtistName\n" +
+                "FROM tracks\n" +
+                "    INNER JOIN playlist_track playTrk on tracks.TrackId = playTrk.TrackId\n" +
+                "    INNER JOIN albums ON albums.AlbumID = tracks.AlbumID\n" +
+                "    INNER JOIN artists ON artists.ArtistId = albums.ArtistId\n" +
+                "WHERE PlaylistId =? ORDER BY tracks.Name ASC";
         try (Connection conn = DB.connect();
              PreparedStatement stmt = conn.prepareStatement(query)) {
             stmt.setLong(1, playlistId);
@@ -64,10 +67,10 @@ public class Playlist extends Model {
     public static List<Playlist> all(int page, int count) {
         try (Connection conn = DB.connect();
              PreparedStatement stmt = conn.prepareStatement(
-                     "SELECT * FROM playlists LIMIT ? OFFSET 10*(?-1)"
+                     "SELECT * FROM playlists LIMIT ? OFFSET ?"
              )) {
             stmt.setInt(1, count);
-            stmt.setInt(2, page);
+            stmt.setInt(2, (page-1)*count);
             ResultSet results = stmt.executeQuery();
             List<Playlist> resultList = new LinkedList<>();
             while (results.next()) {
