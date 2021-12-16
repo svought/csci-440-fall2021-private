@@ -42,8 +42,9 @@ public class Album extends Model {
         if (verify()) {
             try (Connection conn = DB.connect();
                  PreparedStatement stmt = conn.prepareStatement(
-                         "UPDATE albums SET Title = ? WHERE AlbumId=?")) {
+                         "UPDATE albums SET Title = ?, ArtistId = ? WHERE AlbumId=?")) {
                 stmt.setString(1, this.getTitle());
+                stmt.setLong(1, this.getArtistId());
                 stmt.setLong(2, this.getAlbumId());
                 stmt.executeUpdate();
                 return true;
@@ -62,7 +63,7 @@ public class Album extends Model {
                  PreparedStatement stmt = conn.prepareStatement(
                          "INSERT INTO albums (Title, ArtistId) VALUES (?, ?)")) {
                 stmt.setString(1, this.getTitle());
-                stmt.setLong(2, this.getArtistId());
+                stmt.setLong(2, getArtistId());
                 stmt.executeUpdate();
                 albumId = DB.getLastID(conn);
                 return true;
@@ -74,6 +75,18 @@ public class Album extends Model {
         }
     }
 
+    @Override
+    public void delete() {
+        try (Connection conn = DB.connect();
+             PreparedStatement stmt = conn.prepareStatement(
+                     "DELETE FROM albums WHERE AlbumId=?")) {
+            stmt.setLong(1, this.getAlbumId());
+            stmt.executeUpdate();
+        } catch (SQLException sqlException) {
+            throw new RuntimeException(sqlException);
+        }
+    }
+
     public Artist getArtist() {
         return Artist.find(artistId);
     }
@@ -81,6 +94,8 @@ public class Album extends Model {
     public void setArtist(Artist artist) {
         artistId = artist.getArtistId();
     }
+
+    public void setArtistId(Long artistId) { this.artistId = artistId; }
 
     public List<Track> getTracks() {
         return Track.forAlbum(albumId);

@@ -285,7 +285,7 @@ public class Track extends Model {
 
         // Conditionally include the query and argument
         if (artistId != null) {
-            query += " AND ArtistId=? ";
+            query += " AND artists.ArtistId=? ";
             args.add(artistId);
         }
 
@@ -310,20 +310,6 @@ public class Track extends Model {
     }
 
     public static List<Track> search(int page, int count, String orderBy, String search) {
-        HashMap<String, String> map = new HashMap<>();
-        map.put("TRACKID", "TrackId");
-        map.put("NAME", "Name");
-        map.put("ALBUMID", "AlbumId");
-        map.put("MEDIATYPEID", "MediaTypeId");
-        map.put("GENREID", "GenreId");
-        map.put("COMPOSER", "Composer");
-        map.put("MILLISECONDS", "Milliseconds");
-        map.put("BYTES", "Bytes");
-        map.put("UNITPRICE", "UnitPrice");
-
-        if (!map.containsKey(orderBy.toUpperCase())){
-            throw new RuntimeException("Order By Criteria Invalid");
-        }
 
         String query = "SELECT tracks.*, Albums.Title As AlbumName, " +
                 "Artists.Name as ArtistName FROM tracks " +
@@ -378,20 +364,6 @@ public class Track extends Model {
     }
 
     public static List<Track> all(int page, int count, String orderBy) {
-//        HashMap<String, String> map = new HashMap<>();
-//        map.put("TRACKID", "TrackId");
-//        map.put("NAME", "Name");
-//        map.put("ALBUMID", "AlbumId");
-//        map.put("MEDIATYPEID", "MediaTypeId");
-//        map.put("GENREID", "GenreId");
-//        map.put("COMPOSER", "Composer");
-//        map.put("MILLISECONDS", "Milliseconds");
-//        map.put("BYTES", "Bytes");
-//        map.put("UNITPRICE", "UnitPrice");
-//
-//        if (!map.containsKey(orderBy.toUpperCase())){
-//            throw new RuntimeException("Order By Criteria Invalid");
-//        }
 
         try (Connection conn = DB.connect();
              PreparedStatement stmt = conn.prepareStatement(

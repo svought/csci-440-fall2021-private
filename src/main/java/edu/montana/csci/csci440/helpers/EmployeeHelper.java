@@ -15,6 +15,7 @@ public class EmployeeHelper {
         // and use this data structure to maintain reference information needed to build the tree structure
 
         Map<Long, List<Employee>> reportsMap = new HashMap<>();
+
         for (Employee curEmployee : Employee.all()) {
             long reportsTo = curEmployee.getReportsTo();
             List<Employee> employeeReportsList = reportsMap.get(reportsTo);
